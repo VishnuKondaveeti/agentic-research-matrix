@@ -54,13 +54,19 @@ cp .env.example .env
 # Add GOOGLE_API_KEY, OPENAI_API_KEY, or OLLAMA_HOST
 ```
 
-### 3. Launch the Matrix
+### 3. Launch the Matrix (Local)
 ```bash
 python run_all.py
 ```
 
+### 4. Docker Deployment (Recommended)
+For a production-ready setup with Neo4j included:
+```bash
+docker-compose up --build -d
+```
 - **Web UI & API**: http://localhost:8000
-- **Documentation**: http://localhost:8000/docs
+- **Neo4j Browser**: http://localhost:7474
+
 
 
 ## Features
