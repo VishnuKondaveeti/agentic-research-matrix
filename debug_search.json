@@ -1,0 +1,19 @@
+{
+  "status": "success",
+  "query": "test",
+  "papers_found": 1,
+  "papers_downloaded": 0,
+  "papers_processed": 0,
+  "papers": [
+    {
+      "title": "A simple way to speedup Gauss Elimination",
+      "authors": [
+        "Sivaram Ambikasaran"
+      ],
+      "source": "arxiv",
+      "published": "2011-01-21",
+      "has_pdf": false,
+      "url": "https://arxiv.org/pdf/1101.4081v3"
+    }
+  ]
+}

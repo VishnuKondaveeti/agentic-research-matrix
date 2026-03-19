@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Research Matrix</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Plotly.js for 3D visualizations -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- D3.js for Graph visualization -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Phase 5 Libraries: Vis.js & html2pdf -->
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+    <!-- Initialization Overlay -->
+    <div id="init-overlay">
+        <div class="matrix-loader">
+            <div class="loader-circle"></div>
+            <div class="loader-text">SYNCHRONIZING WITH SUBSPACE...</div>
+            <div class="loader-subtext">Initializing Agent Matrix v2.0</div>
+        </div>
+    </div>
+
+    <div id="app-container">
+
+        <!-- Sidebar Navigation -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo"><i class="fas fa-brain"></i></div>
+                <div class="branding">
+                    <h2>A.I.R.A</h2>
+                    <span class="version-badge">v2.0 Premium</span>
+                </div>
+            </div>
+
+            
+            <ul class="nav-links">
+                <li class="nav-item active" data-view="home">
+                    <i class="fas fa-house"></i> <span>Home</span>
+                </li>
+                <li class="nav-item" data-view="research">
+                    <i class="fas fa-search"></i> <span>Deep Search</span>
+                </li>
+                <li class="nav-item" data-view="chat">
+                    <i class="fas fa-comment-dots"></i> <span>Neural Chat</span>
+                </li>
+                <li class="nav-item" data-view="reports">
+                    <i class="fas fa-file-contract"></i> <span>Synthesize</span>
+                </li>
+                <li class="nav-item" data-view="analytics">
+                    <i class="fas fa-project-diagram"></i> <span>3D Graph</span>
+                </li>
+            </ul>
+
+
+            <div class="sidebar-footer">
+               <div class="system-status">
+                    <span class="status-indicator online"></span>
+                    <span>System Online</span>
+               </div>
+               <div class="db-stats" id="sidebar-db-stats">
+                    Nodes: <span class="highlight">0</span>
+               </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main id="main-content">
+            <!-- Header Bar -->
+            <header class="top-bar">
+                <div class="breadcrumbs" id="top-title">Research / <span>Home</span></div>
+
+                <div class="agent-status-panel">
+                    <div class="active-model-badge">
+                        <i class="fa-solid fa-microchip"></i>
+                        <select id="provider-select" class="badge-select">
+                            <option value="gemini">Gemini Pro</option>
+                            <option value="ollama">Ollama Local</option>
+                            <option value="openai">OpenAI GPT-4</option>
+                        </select>
+                    </div>
+                    <div class="agent current-agent">
+                        <i class="fa-solid fa-robot"></i>
+                        <span id="global-agent-status">Awaiting Task...</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Views Container -->
+            <div id="views">
+                <!-- Home View -->
+                <section id="view-home" class="view active">
+                    <section class="hero-section">
+                        <div class="hero-content">
+                            <h1 class="premium-heading">Agentic AI for your <br><span class="gradient-text">Research Stack</span></h1>
+                            <p>A.I.R.A's advancements in multi-agent research accelerate your literature discovery with proven, self-reflective results.</p>
+                            <div class="hero-btns">
+                                <button class="btn btn-primary glow-effect" onclick="switchView('research')">Start Researching</button>
+                                <button class="btn btn-secondary" onclick="switchView('analytics')">Watch Graph Demo</button>
+                            </div>
+                        </div>
+                        <div class="hero-image-wrapper">
+                            <div class="alive-asset">
+                                <img src="assets/hero_asset.png" alt="Adept AI Abstract" id="hero-orb">
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="launcher-grid">
+                        <div class="launcher-card" onclick="switchView('research')">
+                            <div class="card-icon"><i class="fas fa-microscope"></i></div>
+                            <h3>Knowledge Ingestion</h3>
+                            <p>Direct agents to scrape arXiv, CORE, and Semantic Scholar for elite insights.</p>
+                            <span class="launcher-link">Access Tool <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                        <div class="launcher-card" onclick="switchView('analytics')">
+                            <div class="card-icon"><i class="fas fa-network-wired"></i></div>
+                            <h3>Neural Graph Topology</h3>
+                            <p>Visualize complex relationships between authors, concepts, and papers in 3D.</p>
+                            <span class="launcher-link">View Graph <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                        <div class="launcher-card" onclick="switchView('chat')">
+                            <div class="card-icon"><i class="fas fa-bolt"></i></div>
+                            <h3>Neural Query</h3>
+                            <p>Real-time RAG dialogue with your ingested research library.</p>
+                            <span class="launcher-link">Open Chat <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                        <div class="launcher-card" onclick="switchView('reports')">
+                            <div class="card-icon"><i class="fas fa-magic"></i></div>
+                            <h3>Self-Reflective Reports</h3>
+                            <p>Elite autonomous synthesis with built-in critique and citation validation.</p>
+                            <span class="launcher-link">Generate <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- ================== RESEARCH VIEW ================== -->
+                <section id="view-research" class="view">
+                    <div class="panel-header">
+                        <h2>Deep Subspace Search</h2>
+                        <p>Initialize agentic ingestion cascade.</p>
+                    </div>
+
+                    <!-- Search Configuration Form -->
+                    <div class="form-container glass-panel">
+                        <div class="form-row">
+                            <div class="input-group full-width">
+                                <label>Target Vector (Topic)</label>
+                                <input type="text" id="research-query" placeholder="e.g., Attention is all you need..." autocomplete="off">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="input-group">
+                                <label>Depth (Papers per source)</label>
+                                <input type="number" id="research-max" value="5" min="1" max="50">
+                            </div>
+                            <div class="input-group">
+                                <label>Analysis Complexity</label>
+                                <select id="research-complexity" class="custom-select">
+                                    <option value="standard">Standard Academic</option>
+                                    <option value="beginner">Beginner (Analogies)</option>
+                                    <option value="expert">Expert (Peer Review)</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Output Persona</label>
+                                <select id="research-style" class="custom-select">
+                                    <option value="Standard">Standard Scientist</option>
+                                    <option value="Expert">Senior Researcher</option>
+                                    <option value="Beginner">Curious Student</option>
+                                    <option value="Executive Summary">Executive Brief</option>
+                                    <option value="Blog Post">Tech Blogger</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>LLM Provider</label>
+                                <select id="llm-provider-select" class="custom-select">
+                                    <option value="gemini">Google Gemini (Cloud)</option>
+                                    <option value="ollama">Ollama (Local)</option>
+                                    <option value="openai">OpenAI (Pro)</option>
+                                </select>
+                            </div>
+                            <div class="checkbox-group">
+                                <label>Data Sources</label>
+                                <div class="checkboxes">
+                                    <label class="cb-container">arXiv
+                                        <input type="checkbox" id="src-arxiv" checked>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <label class="cb-container">Semantic Scholar
+                                        <input type="checkbox" id="src-s2">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <label class="cb-container">CORE
+                                        <input type="checkbox" id="src-core">
+                                        <span class="checkmark"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary glow-effect" id="btn-search-init">
+                            <i class="fa-solid fa-bolt"></i> Initialize Search Cascade
+                        </button>
+                    </div>
+
+                    <!-- Neural Pulse Loader (Visible during search) -->
+                    <div id="neural-pulse-loader" class="neural-loader-container glass-panel">
+                        <div class="neural-pulse"></div>
+                        <div class="insight-streamer" id="insight-streamer">
+                            <div class="fact-text">Initializing Agent Matrix...</div>
+                        </div>
+                    </div>
+                    <!-- Gap Alert Notification -->
+                    <div id="gap-alert-container" style="display:none; text-align: center; margin-bottom: 2rem;">
+                        <div class="gap-alert-badge">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span id="gap-alert-text">Intelligence found 2 research gaps in this subspace!</span>
+                        </div>
+                    </div>
+
+
+                    <!-- Human-in-the-Loop Review Panel (Hidden initially) -->
+                    <div id="hitl-panel" class="glass-panel" style="display: none; margin-top: 2rem;">
+                        <div class="panel-header hitl-header">
+                            <p>Found <span id="hitl-count" class="highlight">0</span> entities. Select vectors for processing.</p>
+                            <div class="hitl-filters" style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button class="btn btn-secondary btn-small" onclick="filterHighImpact()"><i class="fa-solid fa-fire"></i> Select High Impact (>80)</button>
+                                <button class="btn btn-secondary btn-small" onclick="selectAllPapers(true)">Select All</button>
+                                <button class="btn btn-secondary btn-small" onclick="selectAllPapers(false)">Deselect All</button>
+                            </div>
+                        </div>
+                        <div class="paper-list custom-scrollbar" id="hitl-paper-list">
+                            <!-- Populated via JS -->
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-secondary" id="btn-hitl-cancel">Abort</button>
+                            <button class="btn btn-secondary" onclick="exportBibliography()"><i class="fa-solid fa-file-export"></i> Export BibTeX</button>
+                            <button class="btn btn-primary" id="btn-hitl-approve">Commence Processing & Embedding</button>
+                        </div>
+
+                    </div>
+
+                    <!-- Live Agent Stream -->
+                    <div id="agent-console-research" class="agent-console glass-panel" style="display: none; margin-top: 2rem;">
+                        <div class="console-header">
+                            <i class="fa-solid fa-terminal"></i> Agent Action Stream
+                            <div class="spinner small"></div>
+                        </div>
+                        <div class="console-output custom-scrollbar" id="console-output-research">
+                            <!-- Log stream via websocket -->
+                        </div>
+                    </div>
+                    <!-- Agent War Room: Multi-Perspective Debate -->
+                    <div id="war-room-container" class="glass-panel" style="display: none; margin-top: 2rem;">
+                        <div class="panel-header">
+                            <h3><i class="fa-solid fa-swords"></i> Agent War Room</h3>
+                            <p>Multi-agent methodology critique and consensus building.</p>
+                        </div>
+                        <div class="war-room-grid">
+                            <div class="war-agent-box" id="war-agent-critic">
+                                <div class="war-avatar"><i class="fa-solid fa-user-ninja"></i></div>
+                                <div class="war-role">The Critic</div>
+                                <div class="war-thought">Awaiting paper methodology...</div>
+                            </div>
+                            <div class="war-agent-box" id="war-agent-optimist">
+                                <div class="war-avatar"><i class="fa-solid fa-user-graduate"></i></div>
+                                <div class="war-role">The Optimist</div>
+                                <div class="war-thought">Awaiting innovation highlights...</div>
+                            </div>
+                            <div class="war-agent-box" id="war-agent-advisor">
+                                <div class="war-avatar"><i class="fa-solid fa-user-tie"></i></div>
+                                <div class="war-role">Strategic Advisor</div>
+                                <div class="war-thought">Ready to suggest gaps...</div>
+                            </div>
+                        </div>
+                        <div class="war-debate-log custom-scrollbar" id="war-debate-log">
+                            <!-- Debate messages appear here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================== CHAT VIEW ================== -->
+                <section id="view-chat" class="view">
+                    <div class="chat-container">
+                        <div class="chat-history custom-scrollbar" id="chat-history">
+                            <div class="message assistant">
+                                <div class="avatar"><i class="fa-solid fa-brain"></i></div>
+                                <div class="content">Systems nominal. I am synchronized with your ChromaDB vector space and Neo4j graph nodes. What shall we investigate?</div>
+                            </div>
+                            <!-- Messages added via JS -->
+                        </div>
+
+                        <!-- Typing thought stream -->
+                        <div class="agent-thought-stream" id="chat-thought-stream" style="display: none;">
+                            <span class="thought-badge">Agent Network:</span>
+                            <span class="thought-text typing-effect">Synthesizing vectors...</span>
+                        </div>
+
+                        <div class="chat-input-area glass-panel">
+                            <select id="chat-complexity" class="complexity-pill">
+                                <option value="standard">Standard</option>
+                                <option value="beginner">Beginner</option>
+                                <option value="expert">Expert</option>
+                            </select>
+                            <input type="text" id="chat-input" placeholder="Query the matrix..." autocomplete="off">
+                            <button id="btn-chat-send" class="btn btn-icon"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================== REPORTS VIEW ================== -->
+                <section id="view-reports" class="view">
+                    <div class="panel-header">
+                        <h2>Synthesis Engine</h2>
+                        <p>Command the Report Agent to compile structured intelligence.</p>
+                    </div>
+
+                    <div class="split-layout">
+                        <div class="left-pane glass-panel">
+                            <div class="form-group">
+                                <label>Target Topic</label>
+                                <input type="text" id="report-topic" placeholder="e.g. LLM Reasoning Capabilities">
+                            </div>
+                            <div class="form-group">
+                                <label>Report Type</label>
+                                <select id="report-type" class="custom-select">
+                                    <option value="Literature Review">Comprehensive Literature Review</option>
+                                    <option value="Summary">Executive Summary</option>
+                                    <option value="Research Advice">Gap Analysis & Advice</option>
+                                    <option value="Podcast Script">🎙️ Podcast Script (Expert + Layman Dialogue)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Synthesis Complexity</label>
+                                <select id="report-complexity" class="custom-select">
+                                    <option value="standard">Standard Analysis</option>
+                                    <option value="beginner">Beginner Friendly</option>
+                                    <option value="expert">Expert Deep-Dive</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Graph Depth (k)</label>
+                                <input type="range" id="report-k" min="5" max="30" value="15" class="slider">
+                                <div class="slider-val" id="report-k-val">15 nodes</div>
+                            </div>
+                            
+                            <button class="btn btn-primary full-width glow-effect" id="btn-generate-report">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Synthesize
+                            </button>
+
+                            <!-- Live Agent Stream -->
+                            <div id="agent-console-reports" class="agent-console glass-panel" style="display: none; margin-top: 1.5rem;">
+                                <div class="console-header">
+                                    <i class="fa-solid fa-terminal"></i> Agent Cascade
+                                </div>
+                                <div class="console-output custom-scrollbar" id="console-output-reports"></div>
+                            </div>
+                        </div>
+
+                        <div class="right-pane glass-panel report-viewer custom-scrollbar">
+                            <div class="empty-state" id="report-empty">
+                                <i class="fa-solid fa-file-waveform"></i>
+                                <p>Report output will manifest here.</p>
+                            </div>
+                            <div id="report-content" class="markdown-body" style="display: none;"></div>
+                            
+                            <!-- Elite Insights Section -->
+                            <div id="elite-insights" style="display: none; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
+                                <div id="elite-blueprint" style="display: none;">
+                                    <h3 style="color:var(--accent-primary); margin-bottom: 1rem;"><i class="fa-solid fa-microchip"></i> Implementation Blueprint</h3>
+                                    <div id="blueprint-content" class="markdown-body glass-panel" style="padding: 15px; margin-bottom: 2rem;"></div>
+                                </div>
+
+                                <div id="elite-validation" style="display: none;">
+                                    <h3 style="color:#00f0ff; margin-bottom: 1rem;"><i class="fa-solid fa-box-open"></i> Autonomous Validation Environment</h3>
+                                    <div id="validation-content" class="markdown-body glass-panel validation-panel" style="padding: 15px; margin-bottom: 2rem;"></div>
+                                </div>
+
+                                <div id="elite-debate" style="display: none;">
+                                    <h3 style="color:var(--accent-secondary); margin-bottom: 1rem;"><i class="fa-solid fa-comments-dollar"></i> Scientific Debate</h3>
+                                    <div id="debate-content" class="markdown-body glass-panel" style="padding: 15px; margin-bottom: 2rem;"></div>
+                                </div>
+
+                                <div id="elite-trend" style="display: none;">
+                                    <h3 style="color:#fcd34d; margin-bottom: 1rem;"><i class="fa-solid fa-bolt"></i> Predictive Trend Forecast</h3>
+                                    <div id="trend-content" class="markdown-body glass-panel trend-panel" style="padding: 15px; margin-bottom: 2rem;"></div>
+                                </div>
+
+                                <div id="elite-hypothesis" style="display: none;">
+                                    <h3 style="color:#fcd34d; margin-bottom: 1rem;"><i class="fa-solid fa-lightbulb"></i> Novel Hypotheses</h3>
+                                    <div id="hypothesis-content" class="markdown-body glass-panel" style="padding: 15px; margin-bottom: 2rem;"></div>
+                                </div>
+
+                                <div id="elite-podcast" style="display: none;">
+                                    <h3 style="color:#5865f2; margin-bottom: 1rem;"><i class="fa-solid fa-microphone-lines"></i> Podcast Script</h3>
+                                    <div id="podcast-content" class="markdown-body glass-panel podcast-panel" style="padding: 15px;"></div>
+                                </div>
+                            </div>
+
+                            <div class="action-bar" id="report-actions" style="display:none; margin-top: 2rem; justify-content: flex-end; gap: 1rem;">
+                                <button class="btn-secondary" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                                <button class="btn-secondary" onclick="exportBibliography()"><i class="fa-solid fa-quote-right"></i> Cite Papers</button>
+                                <button class="btn-primary" id="btn-share-research"><i class="fa-solid fa-share-nodes"></i> Share Research</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================== ANALYTICS VIEW ================== -->
+                <section id="view-analytics" class="view">
+                    <div class="tabs-header">
+                        <button class="tab-btn active" data-target="tab-graph">Knowledge Graph Topology</button>
+                        <button class="tab-btn" data-target="tab-3d">3D Vector Space</button>
+                        <button class="tab-btn" data-target="tab-trends">Temporal Trends</button>
+                        <button class="tab-btn" data-target="tab-leaderboard">Impact Leaderboard</button>
+                    </div>
+
+                    <div class="tab-content active" id="tab-graph">
+                        <div class="graph-container glass-panel" id="d3-graph-canvas">
+                            <!-- D3 Graph renders here -->
+                            <div class="graph-overlay">
+                                <h3>Neo4j Entity Map</h3>
+                                <button class="btn btn-sm btn-secondary" onclick="initGraph()"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tab-3d">
+                        <div class="graph-container glass-panel" id="plotly-3d-canvas">
+                            <!-- Plotly 3D renders here -->
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="tab-trends">
+                         <div class="trends-dashboard glass-panel">
+                             <div class="author-search-bar">
+                                 <i class="fa-solid fa-magnifying-glass" style="margin: 12px; color: var(--text-muted);"></i>
+                                 <input type="text" id="trends-search-input" placeholder="Search for a researcher or global topic (e.g., 'Geoffrey Hinton')...">
+                                 <button class="btn btn-sm btn-primary" onclick="searchGlobalTrends()" style="margin: 4px;">Search</button>
+                             </div>
+
+                             <div class="global-metrics-container">
+                                 <h4><i class="fa-solid fa-globe"></i> Universally Most Active</h4>
+                                 <div class="metrics-grid">
+                                     <div class="metric-card">
+                                         <div class="label">Top Researcher Today</div>
+                                         <div class="value" id="global-top-researcher">Andrew Ng</div>
+                                     </div>
+                                     <div class="metric-card">
+                                         <div class="label">Trending Topic</div>
+                                         <div class="value" id="global-trending-topic">GraphRAG + Agents</div>
+                                     </div>
+                                     <div class="metric-card">
+                                         <div class="label">Most Discussed Paper</div>
+                                         <div class="value" id="global-most-discussed">Attention is All You Need</div>
+                                     </div>
+                                 </div>
+                             </div>
+
+                             <div class="chart-container" id="timeline-chart" style="margin-top: 40px;"></div>
+                         </div>
+                    </div>
+
+                    <div class="tab-content" id="tab-leaderboard">
+                        <div class="leaderboard-container glass-panel">
+                            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <h3><i class="fa-solid fa-ranking-star"></i> Global Research Impact Leaderboard</h3>
+                                    <p>Deep-scanned metrics from all agentic subspaces. Updated 2024.</p>
+                                </div>
+                                <div class="scite-badge">CiteScore 2024 Released</div>
+                            </div>
+                            
+                            <div class="leaderboard-table-wrapper custom-scrollbar">
+                                <table class="impact-table">
+                                    <thead>
+                                        <tr>
+                                            <th width="40"></th>
+                                            <th width="50">Rank</th>
+                                            <th style="text-align: left;">Source title <i class="fa-solid fa-arrow-down-short-wide"></i></th>
+                                            <th>CiteScore</th>
+                                            <th>Highest percentile</th>
+                                            <th>Citations</th>
+                                            <th>Documents</th>
+                                            <th>% Cited</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="leaderboard-body">
+                                        <!-- Dynamic Rows -->
+                                        <tr><td colspan="8" style="text-align:center; padding: 40px; color: var(--text-muted);">Syncing with AIRA Intelligence Matrix...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+        </main>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

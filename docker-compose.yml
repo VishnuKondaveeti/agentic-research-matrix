@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    image: research-automation-backend:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - data_volume:/app/data
+    env_file:
+      - .env
+    environment:
+      - CHROMA_PATH=/app/data/chroma_db
+      - LOG_LEVEL=INFO
+    restart: always
+
+volumes:
+  data_volume:

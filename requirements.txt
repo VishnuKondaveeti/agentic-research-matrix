@@ -1,0 +1,34 @@
+# Core
+fastapi
+uvicorn
+streamlit
+pydantic-settings
+python-dotenv
+requests
+
+# LangChain & LLM
+langchain
+langchain-google-genai
+langchain-ollama
+langchain-openai
+langchain-community
+langchain-chroma
+langchain-text-splitters
+
+# Vector Database
+chromadb
+
+# Document Processing
+pymupdf
+tiktoken
+
+# Knowledge Graph
+neo4j
+
+# Analytics
+scikit-learn
+numpy
+plotly
+
+# Utilities
+aiohttp

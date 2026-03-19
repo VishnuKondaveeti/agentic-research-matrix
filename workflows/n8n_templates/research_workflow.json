@@ -1,0 +1,43 @@
+{
+  "name": "Research Paper Collection Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 24 }]
+        }
+      },
+      "name": "Daily Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/webhook/new-topic",
+        "method": "POST",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "topic", "value": "={{$json.topic || 'artificial intelligence agents'}}" },
+            { "name": "max_papers", "value": 5 }
+          ]
+        }
+      },
+      "name": "Trigger Research Pipeline",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const topics = ['machine learning', 'natural language processing', 'computer vision'];\nconst randomTopic = topics[Math.floor(Math.random() * topics.length)];\nreturn [{json: {topic: randomTopic}}];"
+      },
+      "name": "Select Random Topic",
+      "type": "n8n-nodes-base.function",
+      "position": [370, 300]
+    }
+  ],
+  "connections": {
+    "Daily Trigger": { "main": [[{ "node": "Select Random Topic", "type": "main", "index": 0 }]] },
+    "Select Random Topic": { "main": [[{ "node": "Trigger Research Pipeline", "type": "main", "index": 0 }]] }
+  }
+}
