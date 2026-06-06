@@ -1,164 +1,108 @@
 # 🔬 Agentic Research Matrix
 
-An intelligent research platform that automatically collects research papers, processes them with AI, builds a RAG knowledge base, and provides multi-agent analysis with a conversational interface.
+An autonomous, multi-agent research ecosystem designed to accelerate academic discovery. The platform automates paper collection, deep semantic processing, RAG-based knowledge synthesis, and multi-perspective agentic analysis.
 
-## Architecture
+## 🏛️ System Architecture
 
-```
-┌──────────────────────────────────────────────────┐
-│             Professional Dashboard               │
-│   (HTML5/CSS3/JS • Vis.js • Plotly • Lucide)     │
-└────────────────────┬─────────────────────────────┘
-                     │
-┌────────────────────▼─────────────────────────────┐
-│              FastAPI Backend                      │
-│   /api/search │ /api/query │ /api/report          │
-│   /webhook/new-topic │ /webhook/report            │
-└────────────────────┬─────────────────────────────┘
-                     │
-┌────────────────────▼─────────────────────────────┐
-│           Orchestrator Agent                      │
-│  ┌──────────┬──────────┬──────────┬────────────┐ │
-│  │ Research │ Retrieval│ Analysis │  Report     │ │
-│  │  Agent   │  Agent   │  Agent   │  Agent     │ │
-│  └──────────┴──────────┴──────────┴────────────┘ │
-│  ┌──────────┐                                    │
-│  │ Advisor  │                                    │
-│  │  Agent   │                                    │
-│  └──────────┘                                    │
-└───────┬──────────────────────┬───────────────────┘
-        │                      │
-┌───────▼──────────┐  ┌───────▼──────────┐
-│   RAG Pipeline   │  │ Knowledge Graph  │
-│ ChromaDB Vector  │  │    (Neo4j)       │
-│    Database      │  │                  │
-└───────┬──────────┘  └──────────────────┘
-        │
-┌───────▼──────────────────────────────────────────┐
-│           Paper Collection                        │
-│  arXiv API │ Semantic Scholar │ CORE API          │
-└──────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    UI[Professional Dash: HTML5/CSS3/JS/Plotly/Vis.js] <--> API[FastAPI Backend & WebSocket Manager]
+    API <--> ORCH[Orchestrator Agent]
+    
+    subgraph "Expert Agent Roster"
+        ORCH --> RES[Research Agent]
+        ORCH --> RET[Retrieval Agent]
+        ORCH --> ANA[Analysis Agent]
+        ORCH --> ADV[Advisor Agent]
+        ORCH --> POD[Podcast Agent]
+        ORCH --> DEB[Debate Agent]
+        ORCH --> HYP[Hypothesis Agent]
+        ORCH --> INT[Intent Agent]
+    end
+    
+    subgraph "Knowledge Infrastructure"
+        RET <--> VDB[ChromaDB Vector Store]
+        ANA <--> KG[Neo4j Knowledge Graph]
+        ANA <--> MEM[Query Memory & Context]
+    end
+    
+    subgraph "Paper Acquisition"
+        RES --> ARX[arXiv API]
+        RES --> SEM[Semantic Scholar]
+        RES --> OAL[OpenAlex API]
+        RES --> COR[CORE API]
+    end
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
-### 1. Install Dependencies
+### 1. Environment Setup
 ```bash
 pip install -r requirements.txt
-```
-
-### 2. Configure Environment
-```bash
 cp .env.example .env
-# Set LLM_PROVIDER (gemini, ollama, or openai)
-# Add GOOGLE_API_KEY, OPENAI_API_KEY, or OLLAMA_HOST
+# Configure LLM_PROVIDER (gemini, ollama, or openai)
 ```
 
-### 3. Launch the Matrix (Local)
+### 2. Launch the System
 ```bash
 python run_all.py
 ```
+- **Web Interface**: [http://localhost:8000](http://localhost:8000)
+- **API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-### 4. Docker Deployment (Recommended)
-For a production-ready setup with Neo4j included:
+### 3. Docker Deployment
 ```bash
 docker-compose up --build -d
 ```
-- **Web UI & API**: http://localhost:8000
-- **Neo4j Browser**: http://localhost:7474
 
+## 🤖 Advanced Multi-Agent Roster
 
+| Agent | Capability |
+| :--- | :--- |
+| **Orchestrator** | High-level task routing & agent coordination |
+| **Research** | Targeted paper discovery across 4+ scientific APIs |
+| **Retrieval** | Precision context extraction from the Vector Store |
+| **Analysis** | Deep semantic insight generation & data synthesis |
+| **Podcast** | Generates engaging audio summaries of complex research |
+| **Debate** | Simulates adversarial peer review to stress-test findings |
+| **Hypothesis** | Formulates novel research directions & testable claims |
+| **Intent** | Classifies user queries for optimized agent routing |
+| **Advisor** | Personalized research coaching & gap identification |
+| **Style/Format** | Ensures all reports meet professional scholarly standards |
 
-## Features
+## 🌟 Key Features
 
-| Feature | Description |
-|---------|-------------|
-| **Paper Collection** | Search arXiv, Semantic Scholar, CORE APIs |
-| **PDF Processing** | Extract, clean, chunk text from papers |
-| **Vector Database** | ChromaDB semantic search over papers |
-| **RAG Chat** | Ask questions, get answers with citations |
-| **Literature Reviews** | Auto-generate structured reports |
-| **Research Advisor** | Identify gaps and suggest directions |
-| **Trend Detection** | Cluster analysis and keyword trending |
-| **Knowledge Graph** | Neo4j paper/author/topic relationships |
-| **n8n Automation** | Webhook-triggered research workflows |
+- **Omnichannel Collection**: Seamlessly aggregate papers from arXiv, Semantic Scholar, OpenAlex, and CORE.
+- **RAG + Knowledge Graph**: Hybrid retrieval combining vector embeddings with relational graph nodes for superior context.
+- **Real-Time Telemetry**: WebSocket-driven dashboard updates for live agent status and search progress.
+- **Research Audio (Podcasts)**: Convert paper abstracts and summaries into digestible audio briefs.
+- **Trend Intelligence**: 3D PCA visualization of document embeddings and keyword cluster analysis.
+- **Autonomous Workflows**: n8n integration for scheduled research monitoring and automatic report generation.
 
-## API Endpoints
+## 📂 Project Structure
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/health` | GET | Health check |
-| `/api/search` | POST | Search & collect papers |
-| `/api/query` | POST | RAG query |
-| `/api/report` | POST | Generate report |
-| `/api/papers` | GET | List papers |
-| `/api/ingest` | POST | Trigger ingestion |
-| `/api/analyze` | POST | Analyze papers |
-| `/api/advise` | POST | Get research advice |
-| `/api/trends` | GET | Trend analysis |
-| `/webhook/new-topic` | POST | n8n: new topic trigger |
-| `/webhook/report` | POST | n8n: report trigger |
-
-## Project Structure
-
-```
+```text
 Agentic Research Matrix/
-├── config/settings.py         # Pydantic settings
-
-├── collectors/                # Paper collection clients
-│   ├── arxiv_client.py
-│   ├── semantic_scholar_client.py
-│   ├── core_client.py
-│   └── paper_manager.py
-├── processing/                # Document processing
-│   ├── pdf_extractor.py
-│   ├── text_cleaner.py
-│   ├── chunker.py
-│   └── pipeline.py
-├── rag/                       # RAG system
-│   ├── vector_store.py
-│   ├── retriever.py
-│   ├── generator.py
-│   └── rag_chain.py
-├── agents/                    # AI agents
-│   ├── base_agent.py
-│   ├── research_agent.py
-│   ├── retrieval_agent.py
-│   ├── analysis_agent.py
-│   ├── report_agent.py
-│   ├── advisor_agent.py
-│   └── orchestrator_agent.py
-├── graph/knowledge_graph.py   # Neo4j integration
-├── analytics/trend_detector.py
-├── api/                       # FastAPI backend
-│   ├── main.py
-│   ├── routes.py
-│   ├── models.py
-│   └── webhooks.py
-├── ui/app.py                  # Streamlit UI
-├── workflows/n8n_templates/   # n8n workflow templates
-├── logs/system_logger.py
-├── memory/query_memory.py
-└── data/                      # Runtime data (auto-created)
+├── api/                       # FastAPI Engine & WebSocket Management
+├── agents/                    # Full Suite of 17+ Specialist AI Agents
+├── collectors/                # Paper Ingestion Clients (arXiv, OpenAlex, etc.)
+├── processing/                # PDF Extraction & Semantic Chunking
+├── rag/                       # Vector Database (ChromaDB) Orchestration
+├── graph/                     # Neo4j Knowledge Graph Integration
+├── analytics/                 # Trend Detection & Data Visualization
+├── ui/                        # Modern Web Dashboard (Vanilla JS/CSS)
+├── workflows/                 # n8n Automation Templates
+└── memory/                    # Persistent Query Context & Session Memory
 ```
 
-## Multi-Agent System
+## 🛠️ Technology Stack
 
-| Agent | Role |
-|-------|------|
-| **Orchestrator** | Routes tasks, coordinates agents |
-| **Research** | Searches databases, downloads papers |
-| **Retrieval** | Queries vector DB for relevant chunks |
-| **Analysis** | Extracts insights using LLM |
-| **Report** | Generates literature reviews |
-| **Advisor** | Identifies gaps, suggests directions |
+- **Backend**: Python 3.10+, FastAPI, Uvicorn
+- **Intelligence**: Google Gemini (Recommended), Ollama (Local), OpenAI
+- **Storage**: ChromaDB (Vector), Neo4j (Graph), SQLite (Memory)
+- **Frontend**: HTML5, Vanilla JavaScript, Plotly.js, Vis.js, Lucide Icons
+- **Automation**: n8n, Docker/Docker-Compose
+- **Data Engineering**: LangChain, PyMuPDF, Scikit-learn (PCA/Clustering)
 
-## Technology Stack
-
-- **Backend:** Python, FastAPI, Uvicorn
-- **AI/LLM:** Google Gemini, Ollama (Local), OpenAI
-- **Vector DB:** ChromaDB
-- **Knowledge Graph:** Neo4j (Real-time analytics)
-- **Frontend:** Professional Dashboard (HTML5, Vanilla JS, Vis.js, Plotly)
-- **Automation:** n8n Webhooks
-- **Analytics:** scikit-learn (PCA 3D Embeddings), Plotly
+---
+*Built with ❤️ for the research community.*
