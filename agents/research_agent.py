@@ -10,8 +10,9 @@ from processing.pipeline import ProcessingPipeline
 class ResearchAgent(BaseAgent):
     """Finds new research papers and updates the dataset."""
 
-    def __init__(self):
+    def __init__(self, llm_provider: str = None):
         super().__init__("ResearchAgent")
+        self.llm_provider = llm_provider
         self.paper_manager = PaperManager()
         self.pipeline = ProcessingPipeline()
 
