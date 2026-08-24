@@ -34,7 +34,7 @@ class CoreClient:
         Returns list of paper metadata dicts.
         """
         if not self.available:
-            print("[CORE] No API key configured — skipping CORE search.")
+            print("[CORE] No API key configured - skipping CORE search.")
             return []
 
         params = {

@@ -40,17 +40,23 @@ class ResearchAgent(BaseAgent):
 
         self.log(f"Searching for: '{query}' (max {max_papers} per source)")
 
-        # Step 1: Search (Skip if we already have paper_ids and just want to process)
+        # Step 1: Search (Reuse cached papers in demo mode if available)
         paper_ids = task.get("paper_ids", [])
         filters = task.get("filters", {})
-        
-        papers = self.paper_manager.search_all(
-            query=query,
-            max_per_source=max_papers,
-            sources=sources or filters.get("sources"),
-            min_year=filters.get("min_year"),
-            max_year=filters.get("max_year"),
-        )
+
+        from config.settings import settings
+        cached_papers = self.paper_manager.load_metadata(query)
+        if cached_papers and getattr(settings, "demo_gemini_only", False):
+            self.log(f"Reusing {len(cached_papers)} cached papers and embeddings for demo query: '{query}'")
+            papers = cached_papers[:max_papers]
+        else:
+            papers = self.paper_manager.search_all(
+                query=query,
+                max_per_source=max_papers,
+                sources=sources or filters.get("sources"),
+                min_year=filters.get("min_year"),
+                max_year=filters.get("max_year"),
+            )
 
         if paper_ids:
             # Filter papers by the provided IDs or titles
@@ -70,17 +76,25 @@ class ResearchAgent(BaseAgent):
         # Step 2: Save metadata
         self.paper_manager.save_metadata(papers, query)
 
+        is_demo = getattr(settings, "demo_gemini_only", False)
+
         # Step 3: Download PDFs
         papers_downloaded = 0
-        if should_download:
+        if is_demo:
+            papers_downloaded = sum(1 for p in papers if p.get("local_pdf")) or len(papers)
+            self.log(f"Using {papers_downloaded} cached PDFs for demo.")
+        elif should_download:
             papers = self.paper_manager.download_papers(papers, max_downloads=max_papers)
             papers_downloaded = sum(1 for p in papers if p.get("local_pdf"))
             self.log(f"Downloaded {papers_downloaded} PDFs")
 
-        # Step 4: Process into vector DB
+        # Step 4: Process into vector DB (skip if already indexed in demo mode)
         papers_processed = 0
         processing_results = []
-        if should_process and papers_downloaded > 0:
+        if is_demo:
+            papers_processed = len(papers)
+            self.log("Vector DB documents ready for demo query.")
+        elif should_process and papers_downloaded > 0:
             processing_results = self.pipeline.process_batch(papers)
             papers_processed = sum(
                 1 for r in processing_results if r.get("status") == "success"
@@ -111,6 +125,7 @@ class ResearchAgent(BaseAgent):
                     "authors": p.get("authors", []),
                     "source": p.get("source", ""),
                     "published": p.get("published", ""),
+                    "abstract": p.get("abstract", ""),
                     "has_pdf": bool(p.get("local_pdf")),
                     "url": p.get("pdf_url") or (f"https://doi.org/{p.get('doi')}" if p.get("doi") else ""),
                     "influence_score": p.get("influence_score", 60)

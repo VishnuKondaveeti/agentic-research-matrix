@@ -31,6 +31,7 @@ class Generator:
                 google_api_key=settings.google_api_key,
                 temperature=0.3,
                 max_output_tokens=4096,
+                timeout=120,
             )
         
         elif provider == "ollama":
@@ -179,34 +180,46 @@ class Generator:
 
     def generate_answer(self, context: str, question: str, complexity: str = "standard") -> str:
         """Generate an answer to a question given research context."""
+        from config.settings import CallBudgetTracker
+        CallBudgetTracker.record_call("RAGAnswer")
         instruction = self.COMPLEXITY_INSTRUCTIONS.get(complexity, self.COMPLEXITY_INSTRUCTIONS["standard"])
         chain = self.QA_TEMPLATE | self.llm | self.parser
         return chain.invoke({"context": context, "question": question, "complexity_instruction": instruction})
 
     def generate_summary(self, context: str, complexity: str = "standard") -> str:
         """Generate a summary of research content."""
+        from config.settings import CallBudgetTracker
+        CallBudgetTracker.record_call("RAGSummary")
         instruction = self.COMPLEXITY_INSTRUCTIONS.get(complexity, self.COMPLEXITY_INSTRUCTIONS["standard"])
         chain = self.SUMMARY_TEMPLATE | self.llm | self.parser
         return chain.invoke({"context": context, "complexity_instruction": instruction})
 
     def generate_report(self, topic: str, context: str) -> str:
         """Generate a literature review report."""
+        from config.settings import CallBudgetTracker
+        CallBudgetTracker.record_call("ReportAgent")
         chain = self.REPORT_TEMPLATE | self.llm | self.parser
         return chain.invoke({"topic": topic, "context": context})
 
     def generate_advice(self, topic: str, context: str) -> str:
         """Generate research advice identifying gaps and ideas."""
+        from config.settings import CallBudgetTracker
+        CallBudgetTracker.record_call("AdvisorAgent")
         chain = self.ADVISOR_TEMPLATE | self.llm | self.parser
         return chain.invoke({"topic": topic, "context": context})
 
     def generate_analysis(self, context: str, complexity: str = "standard") -> str:
         """Generate a detailed analysis of paper content."""
+        from config.settings import CallBudgetTracker
+        CallBudgetTracker.record_call("AnalysisAgent")
         instruction = self.COMPLEXITY_INSTRUCTIONS.get(complexity, self.COMPLEXITY_INSTRUCTIONS["standard"])
         chain = self.ANALYSIS_TEMPLATE | self.llm | self.parser
         return chain.invoke({"context": context, "complexity_instruction": instruction})
 
     def critique_report(self, topic: str, context: str, report: str) -> str:
         """Critique and improve a generated report."""
+        from config.settings import CallBudgetTracker
+        CallBudgetTracker.record_call("ReviewerAgent")
         chain = self.CRITIQUE_TEMPLATE | self.llm | self.parser
         return chain.invoke({"topic": topic, "context": context, "report": report})
 

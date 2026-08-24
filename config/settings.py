@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     google_api_key: str = ""
     llm_model: str = "gemini-2.0-flash"
     embedding_model: str = "models/embedding-001"
+    demo_gemini_only: bool = True  # Enforces Gemini-only execution and disables Ollama fallback for demo
     
     # Ollama settings
     ollama_host: str = "http://localhost:11434"
@@ -42,7 +43,7 @@ class Settings(BaseSettings):
     neo4j_password: str = "password"
 
     # ── ChromaDB ──
-    chroma_persist_dir: str = "data/chroma_db"
+    chroma_persist_dir: str = "C:/AIData/research_chroma"
 
     # ── Processing ──
     chunk_size: int = 600
@@ -51,7 +52,12 @@ class Settings(BaseSettings):
     # ── API ──
     api_host: str = "127.0.0.1"
     api_port: int = 8000
-    cors_origins: list[str] = ["http://localhost:3000", "http://localhost:8000"]
+    cors_origins: list[str] = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    ]
 
     # ── Logging ──
     log_level: str = "INFO"
@@ -67,7 +73,12 @@ class Settings(BaseSettings):
 
     @property
     def chroma_path(self) -> Path:
-        return PROJECT_ROOT / self.chroma_persist_dir
+        path = Path(self.chroma_persist_dir)
+
+        if path.is_absolute():
+            return path
+
+        return PROJECT_ROOT / path
 
     @property
     def logs_dir(self) -> Path:
@@ -79,3 +90,22 @@ settings = Settings()
 # Ensure runtime directories exist
 for d in [settings.papers_dir, settings.metadata_dir, settings.chroma_path, settings.logs_dir]:
     d.mkdir(parents=True, exist_ok=True)
+
+
+class CallBudgetTracker:
+    """Tracks LLM calls during execution for telemetry and quota protection."""
+    _count: int = 0
+
+    @classmethod
+    def record_call(cls, caller_name: str = "LLM") -> int:
+        cls._count += 1
+        print(f"[LLM] Gemini generation call #{cls._count} ({caller_name})")
+        return cls._count
+
+    @classmethod
+    def get_count(cls) -> int:
+        return cls._count
+
+    @classmethod
+    def reset(cls) -> None:
+        cls._count = 0

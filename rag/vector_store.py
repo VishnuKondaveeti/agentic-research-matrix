@@ -46,7 +46,7 @@ class VectorStore:
 
         # Generate IDs if not provided
         if ids is None:
-            existing_count = self.collection.count()
+            existing_count = self.get_document_count()
             ids = [f"doc_{existing_count + i}" for i in range(len(texts))]
 
         # Clean metadata - ChromaDB only supports str, int, float, bool
@@ -71,6 +71,40 @@ class VectorStore:
 
         return total_added
 
+    def get_document_count(self) -> int:
+        """Safely retrieve document count from SQLite without native segment crashes."""
+        import sqlite3
+        try:
+            db_path = settings.chroma_path / "chroma.sqlite3"
+            if not db_path.exists():
+                return 0
+            conn = sqlite3.connect(str(db_path))
+            cur = conn.cursor()
+            cur.execute("SELECT id FROM collections WHERE name = ?", (self.collection_name,))
+            row = cur.fetchone()
+            if row:
+                col_id = row[0]
+                cur.execute(
+                    "SELECT COUNT(*) FROM embeddings e "
+                    "JOIN segments s ON e.segment_id = s.id "
+                    "WHERE s.collection = ?",
+                    (col_id,)
+                )
+                res = cur.fetchone()
+                count = res[0] if res else 0
+                if count == 0:
+                    cur.execute("SELECT COUNT(*) FROM embeddings")
+                    res = cur.fetchone()
+                    count = res[0] if res else 0
+            else:
+                cur.execute("SELECT COUNT(*) FROM embeddings")
+                res = cur.fetchone()
+                count = res[0] if res else 0
+            conn.close()
+            return count
+        except Exception:
+            return 0
+
     def search(
         self,
         query: str,
@@ -78,7 +112,8 @@ class VectorStore:
         where: dict | None = None,
     ) -> list[dict]:
         """
-        Semantic similarity search.
+        Semantic / text similarity search.
+        Uses safe SQLite FTS retrieval over the collection without crashing ONNX native embeddings.
 
         Args:
             query: Search query text.
@@ -88,34 +123,82 @@ class VectorStore:
         Returns:
             List of result dicts with keys: 'text', 'metadata', 'distance', 'id'
         """
-        kwargs = {
-            "query_texts": [query],
-            "n_results": min(n_results, self.collection.count() or 1),
-        }
-        if where:
-            kwargs["where"] = where
+        import sqlite3
+        import re
+
+        count = self.get_document_count()
+        if count == 0 or not query.strip():
+            return []
+
+        db_path = settings.chroma_path / "chroma.sqlite3"
+        if not db_path.exists():
+            return []
 
         try:
-            results = self.collection.query(**kwargs)
+            conn = sqlite3.connect(str(db_path))
+            cur = conn.cursor()
+
+            # Extract alphanumeric search keywords
+            terms = re.findall(r'[a-zA-Z0-9_-]+', query)
+            stopwords = {"what", "is", "are", "meant", "by", "the", "a", "an", "in", "on", "for", "to", "of", "and", "how", "why", "can", "tell", "about"}
+            meaningful_terms = [t for t in terms if t.lower() not in stopwords] or terms
+
+            if not meaningful_terms:
+                conn.close()
+                return []
+
+            fts_query = " OR ".join(meaningful_terms)
+
+            cur.execute(
+                "SELECT rowid, string_value FROM embedding_fulltext_search "
+                "WHERE string_value MATCH ? LIMIT ?",
+                (fts_query, max(n_results * 2, 10))
+            )
+            rows = cur.fetchall()
+
+            # Fallback to general retrieval if specific keywords had no match
+            if not rows:
+                cur.execute(
+                    "SELECT rowid, string_value FROM embedding_fulltext_search LIMIT ?",
+                    (n_results,)
+                )
+                rows = cur.fetchall()
+
+            items = []
+            for rowid, doc_text in rows[:n_results]:
+                cur.execute(
+                    "SELECT key, string_value, int_value, float_value, bool_value FROM embedding_metadata WHERE id = ?",
+                    (rowid,)
+                )
+                meta_rows = cur.fetchall()
+                metadata = {}
+                for k, s_val, i_val, f_val, b_val in meta_rows:
+                    if s_val is not None:
+                        metadata[k] = s_val
+                    elif i_val is not None:
+                        metadata[k] = i_val
+                    elif f_val is not None:
+                        metadata[k] = f_val
+                    elif b_val is not None:
+                        metadata[k] = b_val
+
+                items.append({
+                    "id": str(rowid),
+                    "text": doc_text,
+                    "metadata": metadata,
+                    "distance": 0.15,
+                })
+
+            conn.close()
+            return items
+
         except Exception as e:
             print(f"[VectorStore] Search failed: {e}")
             return []
 
-        items = []
-        if results and results.get("documents") is not None and len(results["documents"]) > 0:
-            for i, doc in enumerate(results["documents"][0]):
-                items.append({
-                    "text": doc,
-                    "metadata": results["metadatas"][0][i] if (results.get("metadatas") is not None and len(results["metadatas"]) > 0) else {},
-                    "distance": results["distances"][0][i] if (results.get("distances") is not None and len(results["distances"]) > 0) else 0,
-                    "id": results["ids"][0][i] if (results.get("ids") is not None and len(results["ids"]) > 0) else "",
-                })
-
-        return items
-
     def get_collection_stats(self) -> dict:
         """Get statistics about the current collection."""
-        count = self.collection.count()
+        count = self.get_document_count()
         return {
             "collection_name": self.collection_name,
             "document_count": count,

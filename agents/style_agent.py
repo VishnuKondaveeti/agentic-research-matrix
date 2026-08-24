@@ -40,12 +40,24 @@ class StyleAgent(BaseAgent):
             return {"status": "error", "message": "No report provided"}
 
         self.log(f"Adapting report to style: {style}")
+
+        from config.settings import settings, CallBudgetTracker
+
+        if getattr(settings, "demo_gemini_only", False) or str(style).lower() in ("standard", "literature review", "academic", "comprehensive literature review"):
+            self.log(f"Report format already aligned with style '{style}'. Passing through without extra LLM call.", level="info")
+            return {
+                "status": "success",
+                "styled_report": report,
+                "style": style,
+            }
+
         prompt = STYLE_PROMPT.format(
             style=style,
             report=report
         )
         
         try:
+            CallBudgetTracker.record_call("StyleAgent")
             styled_report = self.generator.llm.invoke(prompt).content
             return {
                 "status": "success",

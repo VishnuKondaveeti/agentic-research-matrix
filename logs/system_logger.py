@@ -9,6 +9,18 @@ from logging.handlers import RotatingFileHandler
 
 from config.settings import settings
 
+# Ensure Windows stdout/stderr handles UTF-8 gracefully without charmap crash
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 _loggers: dict[str, logging.Logger] = {}
 
 

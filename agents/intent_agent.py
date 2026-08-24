@@ -52,11 +52,32 @@ class IntentAgent(BaseAgent):
         if not query:
             return {"status": "error", "message": "No query provided"}
 
+        from config.settings import settings, CallBudgetTracker
+
+        # Deterministic extraction for demo mode to conserve API calls
+        if getattr(settings, "demo_gemini_only", False):
+            self.log(f"Deterministic intent extracted for demo: '{query}'", level="info")
+            return {
+                "status": "success",
+                "filters": {
+                    "topic": query,
+                    "min_year": None,
+                    "max_year": None,
+                    "sources": ["arxiv"],
+                    "focus": "methodology & architecture",
+                    "intent_type": "deep_dive",
+                }
+            }
+
         prompt = INTENT_PROMPT.format(query=query)
         
         try:
-            # Using the Generator's LLM to parse
-            response = self.generator.llm.invoke(prompt).content
+            CallBudgetTracker.record_call("IntentAgent")
+            raw_res = self.generator.llm.invoke(prompt).content
+            if isinstance(raw_res, list):
+                response = "".join([c.get("text", str(c)) if isinstance(c, dict) else str(c) for c in raw_res])
+            else:
+                response = str(raw_res)
             
             # Clean response if LLM adds markdown blocks
             if "```json" in response:

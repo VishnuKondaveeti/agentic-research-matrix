@@ -85,7 +85,7 @@ class PaperManager:
             all_papers = filtered
 
         deduplicated = self._deduplicate(all_papers)
-        print(f"[PaperManager] Total: {len(all_papers)} → Deduplicated: {len(deduplicated)}")
+        print(f"[PaperManager] Total: {len(all_papers)} -> Deduplicated: {len(deduplicated)}")
 
         return deduplicated
 

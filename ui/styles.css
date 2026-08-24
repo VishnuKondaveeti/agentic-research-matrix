@@ -945,7 +945,7 @@ input:focus, .custom-select:focus {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.fade-out { opacity: 0; pointer-events: none; }
+.fade-out { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
 
 /* ================= Agent War Room (Elite Debate) ================= */
 .war-room-grid {
